@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Smart Key Box OTP</title>
 
   <!-- Firebase SDK -->
@@ -10,74 +11,54 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-functions-compat.js"></script>
 
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    #otp-section { display: none; }
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 20px; 
+      font-size: 22px;
+      text-align: center;
+      background: #f7f7f7;
+    }
+    input {
+      width: 90%;
+      font-size: 24px;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 92%;
+      font-size: 26px;
+      padding: 14px;
+      margin-top: 20px;
+      background-color: #007BFF;
+      color: white;
+      border-radius: 8px;
+      border: none;
+    }
+    button:active {
+      background-color: #005FCC;
+    }
+    #otp-section {
+      margin-top: 40px;
+      display: none;
+    }
+    .title {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    #otp-result {
+      font-size: 40px;
+      font-weight: bold;
+      color: red;
+      margin-top: 25px;
+    }
   </style>
 </head>
 <body>
 
   <!-- Login Section -->
-  <h2>ログイン</h2>
-  <input id="email" type="email" placeholder="メールアドレス"><br><br>
-  <input id="password" type="password" placeholder="パスワード"><br><br>
-  <button onclick="login()">ログイン</button>
-  <p id="login-result"></p>
-
-  <!-- OTP Section (ログイン後に表示) -->
-  <div id="otp-section">
-    <h2>OTP発行</h2>
-    <input id="boxId" type="text" placeholder="Box ID"><br><br>
-    <input id="accessKey" type="number" placeholder="Access Key"><br><br>
-    <button onclick="issueOtp()">OTP発行</button>
-    <p id="otp-result"></p>
-  </div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDzJbYBftHQrfm3P9v9Lj_8dTFD7QBCpQ4",
-      authDomain: "smart-key-box-otp.firebaseapp.com",
-      projectId: "smart-key-box-otp",
-      storageBucket: "smart-key-box-otp.firebasestorage.app",
-      messagingSenderId: "299456288052",
-      appId: "1:299456288052:web:1f4e07ac0cde5979054161",
-      measurementId: "G-7CTPMPPXYQ"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-
-    const auth = firebase.auth();
-    const functions = firebase.functions();
-
-    // --- Login ---
-    async function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-        document.getElementById("login-result").innerText = "ログイン成功！";
-        document.getElementById("otp-section").style.display = "block";
-      } catch (e) {
-        document.getElementById("login-result").innerText = "ログイン失敗：" + e.message;
-      }
-    }
-
-    // --- Issue OTP ---
-    async function issueOtp() {
-      const boxId = document.getElementById("boxId").value;
-      const accessKey = Number(document.getElementById("accessKey").value);
-
-      try {
-        const issueOtpFn = functions.httpsCallable("issueOtp");
-        const result = await issueOtpFn({ boxId, accessKey });
-        document.getElementById("otp-result").innerText =
-          "OTP: " + result.data.otp + "（5分間有効）";
-      } catch (e) {
-        document.getElementById("otp-result").innerText =
-          "エラー：" + e.message;
-      }
-    }
-  </script>
-
-</body>
-</html>
+  <div id="login-section">
+    <div class="title">ログイン</div>
+    <input id="email" type="email" placeholder="メールアドレス
