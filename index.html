@@ -72,7 +72,6 @@
     <p id="otp-result"></p>
   </div>
 
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDzJbYBftHQrfm3P9v9Lj_8dTFD7QBCpQ4",
@@ -87,6 +86,8 @@
     firebase.initializeApp(firebaseConfig);
 
     const auth = firebase.auth();
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);  // ←追加済み
+
     const functions = firebase.app().functions("us-central1");
 
     async function login() {
@@ -95,6 +96,10 @@
 
       try {
         await auth.signInWithEmailAndPassword(email, password);
+
+        // トークン更新
+        await auth.currentUser.getIdToken(true);
+
         document.getElementById("login-section").style.display = "none";
         document.getElementById("otp-section").style.display = "block";
       } catch (e) {
@@ -103,18 +108,12 @@
     }
 
     async function issueOtp() {
-      const boxId = "SKB-01";
+      const boxId = "SKB-01";  // 固定ID
       const accessKey = Number(document.getElementById("accessKey").value);
 
       try {
-        // 認証トークン更新
-        await auth.currentUser.getIdToken(true);
-
         const issueOtpFn = functions.httpsCallable("issueOtp");
-        const result = await issueOtpFn({
-          boxId: boxId,
-          accessKey: accessKey
-        });
+        const result = await issueOtpFn({ boxId, accessKey });
 
         document.getElementById("otp-result").innerText =
           "OTP: " + result.data.otp;
