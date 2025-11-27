@@ -61,4 +61,66 @@
   <!-- Login Section -->
   <div id="login-section">
     <div class="title">ログイン</div>
-    <input id="email" type="email" placeholder="メールアドレス
+    <input id="email" type="email" placeholder="メールアドレス"><br>
+    <input id="password" type="password" placeholder="パスワード"><br>
+    <button onclick="login()">ログイン</button>
+    <p id="login-result"></p>
+  </div>
+
+  <!-- OTP Section -->
+  <div id="otp-section">
+    <div class="title">OTP発行</div>
+    <input id="boxId" type="text" placeholder="Box ID"><br>
+    <input id="accessKey" type="number" placeholder="Access Key"><br>
+    <button onclick="issueOtp()">OTP発行</button>
+    <p id="otp-result"></p>
+  </div>
+
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDzJbYBftHQrfm3P9v9Lj_8dTFD7QBCpQ4",
+      authDomain: "smart-key-box-otp.firebaseapp.com",
+      projectId: "smart-key-box-otp",
+      storageBucket: "smart-key-box-otp.firebasestorage.app",
+      messagingSenderId: "299456288052",
+      appId: "1:299456288052:web:1f4e07ac0cde5979054161",
+      measurementId: "G-7CTPMPPXYQ"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const functions = firebase.functions();
+
+    async function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("otp-section").style.display = "block";
+      } catch (e) {
+        document.getElementById("login-result").innerText = "ログイン失敗：" + e.message;
+      }
+    }
+
+    async function issueOtp() {
+      const boxId = document.getElementById("boxId").value;
+      const accessKey = Number(document.getElementById("accessKey").value);
+
+      try {
+        const issueOtpFn = functions.httpsCallable("issueOtp");
+        const result = await issueOtpFn({ boxId, accessKey });
+        document.getElementById("otp-result").innerText =
+          "OTP: " + result.data.otp;
+      } catch (e) {
+        document.getElementById("otp-result").innerText =
+          "エラー：" + e.message;
+      }
+    }
+  </script>
+
+</body>
+</html>
