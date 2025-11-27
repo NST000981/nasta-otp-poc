@@ -106,13 +106,13 @@
     }
 
     async function issueOtp() {
-      const boxId = "SKB-01";  // 固定ID
+      const boxId = "SKB-01";  // 今は固定ID．将来，ボックスが増えた場合はログインIDと紐付けを行う予定．管理会社 or 清掃業者など．
       const accessKey = Number(document.getElementById("accessKey").value);
-
+      
       try {
-        const issueOtpFn = functions.httpsCallable("issueOtp");
+        const issueOtpFn = functions.region("us-central1").httpsCallable("issueOtp");
         const result = await issueOtpFn({ boxId, accessKey });
-
+        
         document.getElementById("otp-result").innerText =
           "OTP: " + result.data.otp;
       } catch (e) {
@@ -120,6 +120,7 @@
           "エラー：" + e.message;
       }
     }
+
   </script>
 
 </body>
