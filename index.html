@@ -1,55 +1,78 @@
 <!DOCTYPE html>
-
-<html lang="en">
+<html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nasta One-Time Passcode Generator</title>
-<style>
-  body { font-family: 'Segoe UI', sans-serif; text-align:center; margin:60px 20px; background:#f7f7f7; color:#222; }
-  h1 { font-size:1.8em; margin-bottom:0.5em; }
-  input { font-size:1.5em; text-align:center; width:130px; border-radius:6px; border:1px solid #ccc; padding:6px; }
-  button { font-size:1.1em; padding:10px 18px; margin-left:8px; border:none; border-radius:6px; background:#000; color:#fff; cursor:pointer; }
-  button:hover { background:#444; }
-  #result { margin-top:40px; font-size:2em; font-weight:bold; color:#007acc; }
-  footer { margin-top:60px; font-size:0.8em; color:#777; }
-</style>
-<script>
-// -------------------------------
-// パスワード認証（簡易）
-// -------------------------------
-function checkLogin() {
-  const pwd = prompt("Enter access password:");
-  if (pwd !== "nasta2025") {
-    document.body.innerHTML = "<h2>Access Denied</h2><p>Invalid password.</p>";
-    throw new Error("Access denied");
-  }
-}
+  <meta charset="UTF-8">
+  <title>Smart Key Box OTP</title>
 
-// -------------------------------
-// ワンタイムパスコード生成式A
-// -------------------------------
-function generatePasscode() {
-const accessKey = parseInt(document.getElementById("accessKey").value);
-if (isNaN(accessKey) || accessKey < 0 || accessKey > 9999) {
-alert("Please enter a 4-digit Access Key (0000-9999).");
-return;
-}
-const seed = (accessKey * 73 + 41) ^ 0x5A5A;
-const val = (seed * 97 + 1234) % 10000;
-const passcode = val.toString().padStart(4, "0");
-document.getElementById("result").innerText = "Passcode: " + passcode;
-}
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-functions-compat.js"></script>
 
-window.onload = checkLogin; </script>
-
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #otp-section { display: none; }
+  </style>
 </head>
 <body>
-  <h1>Nasta One-Time Passcode Generator</h1>
-  <p>Enter your 4-digit Access Key to generate a passcode.</p>
-  <input id="accessKey" maxlength="4" placeholder="0000" />
-  <button onclick="generatePasscode()">Generate</button>
-  <div id="result"></div>
-  <footer>© 2025 Nasta Co., Ltd. | PoC Use Only</footer>
+
+  <!-- Login Section -->
+  <h2>ログイン</h2>
+  <input id="email" type="email" placeholder="メールアドレス"><br><br>
+  <input id="password" type="password" placeholder="パスワード"><br><br>
+  <button onclick="login()">ログイン</button>
+  <p id="login-result"></p>
+
+  <!-- OTP Section (ログイン後に表示) -->
+  <div id="otp-section">
+    <h2>OTP発行</h2>
+    <input id="boxId" type="text" placeholder="Box ID"><br><br>
+    <input id="accessKey" type="number" placeholder="Access Key"><br><br>
+    <button onclick="issueOtp()">OTP発行</button>
+    <p id="otp-result"></p>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "smart-key-box-otp",
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const functions = firebase.functions();
+
+    // --- Login ---
+    async function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        document.getElementById("login-result").innerText = "ログイン成功！";
+        document.getElementById("otp-section").style.display = "block";
+      } catch (e) {
+        document.getElementById("login-result").innerText = "ログイン失敗：" + e.message;
+      }
+    }
+
+    // --- Issue OTP ---
+    async function issueOtp() {
+      const boxId = document.getElementById("boxId").value;
+      const accessKey = Number(document.getElementById("accessKey").value);
+
+      try {
+        const issueOtpFn = functions.httpsCallable("issueOtp");
+        const result = await issueOtpFn({ boxId, accessKey });
+        document.getElementById("otp-result").innerText =
+          "OTP: " + result.data.otp + "（5分間有効）";
+      } catch (e) {
+        document.getElementById("otp-result").innerText =
+          "エラー：" + e.message;
+      }
+    }
+  </script>
+
 </body>
 </html>
