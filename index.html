@@ -111,7 +111,7 @@
       
       try {
         const issueOtpFn = functions.httpsCallable("issueOtp");
-        const result = await issueOtpFn({ boxId, accessKey });
+        const result = await issueOtpFn({ boxId: boxId, accessKey: accessKey });
         
         document.getElementById("otp-result").innerText =
           "OTP: " + result.data.otp;
